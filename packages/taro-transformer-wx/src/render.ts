@@ -20,7 +20,8 @@ import {
   isVarName,
   setParentCondition,
   isContainJSXElement,
-  getSlotName
+  getSlotName,
+  replaceJSXTextWithTextComponent
 } from './utils'
 import { difference, get as safeGet, cloneDeep } from 'lodash'
 import {
@@ -1048,6 +1049,9 @@ export class RenderParser {
     renderBody.traverse(this.loopComponentVisitor)
     this.handleLoopComponents()
     renderBody.traverse(this.visitors)
+    if (Adapter.type === Adapters.quickapp) {
+      renderBody.traverse(this.quickappVistor)
+    }
     this.setOutputTemplate()
     this.removeJSXStatement()
     this.setUsedState()
@@ -1055,6 +1059,15 @@ export class RenderParser {
     this.setCustomEvent()
     this.createData()
     this.setProperies()
+  }
+
+  private quickappVistor: Visitor = {
+    JSXExpressionContainer (path) {
+      if (path.parentPath.isJSXAttribute() || isContainJSXElement(path)) {
+        return
+      }
+      replaceJSXTextWithTextComponent(path)
+    }
   }
 
   checkDuplicateData () {
