@@ -147,6 +147,7 @@ export function parseJSXElement (element: t.JSXElement): string {
   const isDefaultComponent = DEFAULT_Component_SET.has(componentName)
   const componentSpecialProps = SPECIAL_COMPONENT_PROPS.get(componentName)
   let hasElseAttr = false
+  const isJSXMetHod = componentName === 'Template' && attributes.some(a => a.name.name === 'is' && t.isStringLiteral(a.value) && a.value.value.startsWith('render'))
   attributes.forEach((a, index) => {
     if (a.name.name === Adapter.else && !['block', 'Block'].includes(componentName) && !isDefaultComponent) {
       hasElseAttr = true
@@ -207,7 +208,7 @@ export function parseJSXElement (element: t.JSXElement): string {
                 value = code
               }
             } else {
-              value = isBindEvent || isAlipayEvent ? code : `{{${code}}}`
+              value = isBindEvent || isAlipayEvent ? code : `{{${isJSXMetHod && name === 'data' ? '...' : ''}${code}}}`
             }
           }
           if (Adapter.type === Adapters.swan && name === Adapter.for) {
